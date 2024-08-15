@@ -120,6 +120,15 @@ body {
   color: black; /* Color más suave para la descripción */
   margin-top: -10px;
 }
+
+.description-alone {
+  font-size: 40px; /* Tamaño de fuente más pequeño para la descripción */
+  color: black; /* Color más suave para la descripción */
+  margin-top: -10px;
+  font-weight: 600;
+}
+
+
 .charts-row {
   display: flex;
   justify-content: space-between;
@@ -144,9 +153,17 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center; /* Opcional, para centrar también horizontalmente */
+  align-items: left; /* Opcional, para centrar también horizontalmente */
   /*height: 100%; /* Asegúrate de que el contenedor tenga una altura definida */
   text-align: center; /* Opcional, para centrar el texto */
+  background-color: transparent;
+}
+.info-card-alone {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: left; /* Opcional, para centrar también horizontalmente */
+  text-align: left; /* Opcional, para centrar el texto */
   background-color: transparent;
 }
 

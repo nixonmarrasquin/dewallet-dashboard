@@ -62,7 +62,7 @@ const BarChartComponent = ({ data }) => (
   
     return (
       <div className="chart-container">
-        <h2 className="chart-title">Participacion de Clientes - Julio</h2>
+        <h2 className="chart-title">Participación de Clientes - Julio</h2>
         <ResponsiveContainer width="100%" height={350}>
           <PieChart>
             <Pie
@@ -80,13 +80,28 @@ const BarChartComponent = ({ data }) => (
               ))}
             </Pie>
             <Tooltip />
-            <Legend />
+            <Legend
+              layout="vertical"
+              verticalAlign="middle"
+              align="right"
+              wrapperStyle={{ fontSize: '18px', paddingLeft: '10px' }} // Ajusta el tamaño de la fuente aquí
+              />
           </PieChart>
         </ResponsiveContainer>
       </div>
     );
   };
-  
+
+  const InfoCardAlone = ({ values }) => (
+    <div className="info-card-alone">
+      <div className="value">
+        {values[0].value}
+      </div>
+      <div className="description-alone">
+        {values[0].description}
+      </div>
+    </div>
+  );
   const InfoCard = ({ values }) => (
     <div className="info-card">
       <div className="value">
@@ -100,8 +115,8 @@ const BarChartComponent = ({ data }) => (
 
 const Top5ProductsTable = ({ data, title }) => {
   const totalQuantity = data.reduce((sum, item) => sum + item.cantidad, 0);
-  const top6Data = data.slice(0, 6);
-  const othersSum = data.slice(6).reduce((sum, item) => sum + item.cantidad, 0);
+  const top6Data = data.slice(0, 8);
+  const othersSum = data.slice(8).reduce((sum, item) => sum + item.cantidad, 0);
 
   const calculatePercentage = (value) => ((value / totalQuantity) * 100).toFixed(2);
 
@@ -298,7 +313,7 @@ const Marca = () => {
           const sortedData = data.sort((a, b) => b.cantidad - a.cantidad);
       
           // Toma los primeros 5 elementos
-          const top5Data = sortedData.slice(0, 6);
+          const top5Data = sortedData.slice(0, 8);
       
           // Calcula el porcentaje de los primeros 5 elementos
           const top5Transformed = top5Data.map(item => ({
@@ -307,7 +322,7 @@ const Marca = () => {
           }));
       
           // Calcula la suma de las cantidades de los elementos no incluidos en los primeros 5
-          const othersTotal = sortedData.slice(6).reduce((acc, item) => acc + item.cantidad, 0);
+          const othersTotal = sortedData.slice(8).reduce((acc, item) => acc + item.cantidad, 0);
       
           // Agrega la categoría "Otros" si hay elementos adicionales
           const othersTransformed = othersTotal > 0 ? [{
@@ -410,22 +425,22 @@ const Marca = () => {
         <div className="dashboard-header">
           <img src="/dewallet.png" alt="DeWallet Logo" className="dashboard-logo" />
         </div>
-        <h2 className="chart-title-principal">Hola {vendedor.nombre} {vendedor.apellido}, este es tu resumen en DeWallet hasta el momento</h2>
+        <h2 className="chart-title-principal">DELL, este es tu resumen en DeWallet hasta el momento</h2>
         <div className="info-cards-container">
       <div className="info-cards-group">  
         <InfoCard
           values={[
             {
               value: totalRegistros !== null ? totalRegistros.toLocaleString() : 'Cargando...',
-              description: 'registros en julio',
+              description: '',
             },
           ]}
         />
-        <InfoCard
+        <InfoCardAlone
           values={[
             {
-              value: totalValorPremioCanjeado !== null ? `$${totalValorPremioCanjeado.toLocaleString()}` : 'Cargando...',
-              description: 'registrado en julio',
+              value: '',
+              description: 'registros de productos en Julio',
             },
           ]}
         />
@@ -457,10 +472,8 @@ const Marca = () => {
             <PieChartComponent data={pieData} />
           </div>
         </div>
-        <h1 className="chart-second-title">Información DeWallet</h1>
+        <h1 className="chart-second-title">Información por ciudades</h1>
         <div className="charts-row">
-          <div className="chart-container">
-          </div>
           <div className="chart-container">
           <Top5ProductsTable  
               data={productosCanjeados} 
