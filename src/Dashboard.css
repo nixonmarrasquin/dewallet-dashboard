@@ -7,6 +7,28 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.top-5-list ol {
+  padding-left: 20px;
+}
+
+.top-5-list li {
+  display: flex; /* Usa flexbox para alinear los elementos en línea */
+  justify-content: flex-start; /* Alinea los elementos a la izquierda */
+  align-items: center; /* Alinea verticalmente los elementos */
+  margin-bottom: 10px;
+  font-size: 16px;
+  text-align: left; /* Alinea el texto dentro del contenedor a la izquierda */
+}
+
+
+.top-5-list .item-name {
+  font-weight: bold;
+  margin-right: 10px; /* Espacio entre nombre y valor */
+  text-align: left; /* Alinea el texto a la izquierda */
+}
+
+
+
 .dashboard {
   padding: 16px;
   background-color: #f7fafc;
@@ -25,6 +47,7 @@ body {
   padding: 1px;
   border-radius: 8px;
   margin-bottom: 200px;
+  padding: 5px;
   margin-top: 200px;
   background-color: white;
 }
@@ -36,45 +59,141 @@ body {
   text-align: center;
 }
 
-.info-cards {
-  display: flex;
+.chart-title-principal {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-align: center;
+  margin-top: -15px;
+}
+
+.chart-second-title {
+  font-size: 3rem;
+  font-weight: 600;
+  margin-bottom: -10px;
+  text-align: center;
   background-color: white;
+  margin: 10px;
+  border-radius: 8px;
+}
+
+.info-cards-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 0px; /* Ajusta según sea necesario */
+}
+
+.info-cards-group {
+  display: flex;
+  width: 48%;
+  background-color: white;
+  border-radius: 8px;
   justify-content: space-between;
   margin-bottom: 16px;
-  border-radius: 8px;
   margin-left: 10px;
   margin-right: 10px;
   margin-top: 10px;
 }
 
-.info-card {
-  padding: 16px;
-  border-radius: 8px;
-  margin-left: 10px;
-  margin-right: 10px;
-  margin-top: 10px;
-  background-color: white;
+.info-cards-group .info-card {
   flex: 1;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  padding: 20px;
+}
+
+.info-cards-group .info-card:last-child {
+  margin-right: 0px;
+}
+
+.info-card .value {
+  font-size: 72px; /* Aumenta el tamaño de la fuente del valor */
+  font-weight: bold; /* Asegura que el texto sea negrita */
+  margin-bottom: 10px; /* Espacio entre el valor y la descripción */
   justify-content: center;
- /* margin: 0 8px;*/
 }
 
-.info-value {
-  font-size: 5rem;
-  font-weight: 700;
-  margin-bottom: -20px;
-  margin-top: -5px;
+.info-card .description {
+  font-size: 17px; /* Tamaño de fuente más pequeño para la descripción */
+  color: black; /* Color más suave para la descripción */
+  margin-top: -10px;
 }
-
 .charts-row {
   display: flex;
   justify-content: space-between;
+  margin-right: 0px;
+  margin-left: 0px;
+  margin-bottom: 15px;
+  padding-bottom: -100px;
+  height: auto !important;
 }
 
 .chart-container {
   flex: 1;
-  margin: 0 8px;
+  margin: 0 10px;
+  max-height: auto !important;
+}
+
+.small-text {
+  font-size: 60px; /* Ajusta el tamaño según tus necesidades */
+}
+
+.info-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* Opcional, para centrar también horizontalmente */
+  /*height: 100%; /* Asegúrate de que el contenedor tenga una altura definida */
+  text-align: center; /* Opcional, para centrar el texto */
+  background-color: transparent;
+}
+
+.info-card > div {
+  margin: 5px 0; /* Opcional, para dar un poco de espacio entre los elementos */
+}
+
+.top-clients {
+  margin-bottom: 2px;
+}
+
+.top-client-item {
+  font-size: 16px;
+  margin-bottom: 1px;
+}
+
+.client-name {
+  font-weight: bold;
+}
+.pie-pagina {
+  text-align: center;
+  background-color: #ffc311;
+  border-radius: 8px; 
+  margin-right: 10px;
+  margin-left: 10px;
+  margin-top: -25px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.pie-pagina h2 {
+margin-top: -15px;
+
+}
+
+.nombre {
+  margin-top: -20px;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.contacto {
+  display: flex;
+  justify-content: center; /* Centra horizontalmente el contenido de la fila */
+  gap: 50px; /* Espacio entre el número de teléfono y el correo */
+}
+
+.contacto h2 {
+  margin: 0; /* Elimina márgenes para que estén alineados correctamente */
 }

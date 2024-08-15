@@ -3,13 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.6.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
+    "lucide-react": "^0.427.0",
+    "mssql": "^11.0.1",
+    "mysql2": "^3.11.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.0",
     "react-scripts": "5.0.1",
     "recharts": "^2.12.7",
     "web-vitals": "^2.1.4"
@@ -37,5 +44,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "proxy": "https://serviciosmovil.siglo21.net:8443"
 }

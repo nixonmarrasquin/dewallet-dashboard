@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, LabelList, Treemap, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap, LineChart, Line, LabelList } from 'recharts';
 import html2canvas from 'html2canvas';
 import axios from 'axios';
 import './Dashboard.css';
@@ -14,10 +14,19 @@ const truncateText = (text, maxLength) => {
 // Colores para el gráfico de pastel
 const COLORS = ['#004e98', '#3a6ea5', '#1b4965', '#ffa62b', '#e07a5f', '#f58549', '#0fa3b1' ];
 
+// Datos para gráficos
+/*const pieData = [
+  { name: 'MONITORES GAMING', value: 33.20 },
+  { name: 'HP - Computadoras Consumo', value: 26.13 },
+  { name: 'EPSON IMPRESION', value: 15.52 },
+  { name: 'OTROS', value: 25.15 },
+];*/
+
+
 const BarChartComponent = ({ data }) => (
     <div className="chart-container">
-      <h2 className="chart-title">Tus productos más registrados hasta ahora</h2>
-      <ResponsiveContainer width="100%" height={350}>
+      <h2 className="chart-title">Tus productos más registrados este año</h2>
+      <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data} layout="vertical" margin={{ right: 100, left: 10 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
@@ -27,12 +36,12 @@ const BarChartComponent = ({ data }) => (
           <YAxis
             dataKey="name"
             type="category"
-            tickFormatter={(value) => truncateText(value, 50)}
+            tickFormatter={(value) => truncateText(value, 40)}
             tick={{ fontSize: 16 }}
             width={300}
           />
           <Tooltip />
-          <Bar dataKey="value" fill="#14213d" barSize={30}>
+          <Bar dataKey="value" fill="#14213d" barSize={50}>
             {/* Aquí agregamos el LabelList para mostrar los valores en cada barra */}
             <LabelList dataKey="value" position="right" />
           </Bar>
@@ -41,111 +50,64 @@ const BarChartComponent = ({ data }) => (
     </div>
   );
 
-  const Top5ProductsTable = ({ data, title }) => {
-    const totalQuantity = data.reduce((sum, item) => sum + item.cantidad, 0);
-    const top6Data = data.slice(0, 6);
-    const othersSum = data.slice(6).reduce((sum, item) => sum + item.cantidad, 0);
+
+
+  const PieChartComponent = ({ data }) => {
+    console.log('Datos en PieChartComponent:', data);
   
-    const calculatePercentage = (value) => ((value / totalQuantity) * 100).toFixed(2);
-  
-    const chartData = [
-      ...top6Data.map(item => ({
-        name: truncateText(item.producto, 35),
-        value: parseFloat(calculatePercentage(item.cantidad))
-      })),
-      { name: 'Otros', value: parseFloat(calculatePercentage(othersSum)) }
-    ];
-  
-    const CustomTooltip = ({ active, payload }) => {
-      if (active && payload && payload.length) {
-        return (
-          <div className="custom-tooltip" style={{ backgroundColor: '#fff', padding: '5px', border: '1px solid #ccc' }}>
-            <p className="label">{`${payload[0].name}: ${payload[0].value}%`}</p>
-          </div>
-        );
-      }
-      return null;
-    };
-  
-    return (
-      <div className="chart-container">
-        <h2 className="chart-title">{title}</h2>
-        <ResponsiveContainer width="100%" height={350}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              labelLine={true}
-              label={(entry) => `${entry.value}%`}
-              outerRadius={120}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
-        <div className="legend-container" style={{ marginTop: '-20px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-        {chartData.map((entry, index) => (
-          <div key={`legend-${index}`} className="legend-item" style={{ display: 'flex', alignItems: 'center', margin: '0 10px 10px 0', minWidth: '200px' }}>
-            <div style={{ width: '20px', height: '20px', backgroundColor: COLORS[index % COLORS.length], marginRight: '10px' }}></div>
-            <span>{entry.name}</span>
-          </div>
-        ))}
-        </div>
-      </div>
-    );
-  };
-  
-  
-  const MarcasCanjeadasBarChart = ({ data }) => {
+    // Ensure data is in the correct format
     const processedData = data.map(item => ({
       name: item.name,
-      value: parseFloat(item.value)
+      value: parseFloat(item.value) // Ensure value is a number
     }));
   
     return (
       <div className="chart-container">
-        <h2 className="chart-title">Tus marcas - Julio</h2>
+        <h2 className="chart-title">Marcas registradas - Julio</h2>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={processedData} layout="vertical" margin={{ right: 20, left: 40 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" />
-            <YAxis dataKey="name" type="category" />
+          <PieChart>
+            <Pie
+              data={processedData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={({ name, percent }) => ` ${(percent * 100).toFixed(2)}%`}
+              outerRadius={100} // Increased from 80 to 100
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {processedData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
             <Tooltip />
-            <Legend formatter={(value) => <span>Registros</span>} />
-            <Bar dataKey="value" fill="#1A4870" barSize={20}>
-              <LabelList dataKey="value" position="right" />
-            </Bar>
-          </BarChart>
+            <Legend />
+          </PieChart>
         </ResponsiveContainer>
       </div>
     );
   };
   
-  const LineChartComponent = ({ data }) => (
+  
+
+const LineChartComponent = ({ data }) => (
     <div className="chart-container">
-      <h2 className="chart-title">Usuarios DeWallet</h2>
+      <h2 className="chart-title">Tus últimos registros</h2>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} layout="vertical" margin={{ right: 50, left: 50 }}>
+        <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" />
-          <YAxis type="category" dataKey="name" />
-          <Tooltip />
-          <Legend formatter={(value) => <span>Registros</span>} />
-          <Bar dataKey="value" fill="#1A4870" barSize={20}>
-            <LabelList dataKey="value" position="right" />
-          </Bar>
-        </BarChart>
+          <XAxis dataKey="month" />
+          <YAxis label={{ value: '', angle: -90, position: 'insideLeft', dy: -10 }} />
+          <Tooltip formatter={(value) => [`${value} Registros`, 'Mes']} />
+          <Legend formatter={(value) => `Cantidad de ${value}`} />
+          <Line type="monotone" dataKey="value" stroke="black" strokeWidth={2} name="Registros">
+            <LabelList dataKey="value" position="top" offset={10} />
+          </Line>
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );
-  
-  
+
   const InfoCard = ({ values }) => (
     <div className="info-card">
       <div className="value">
@@ -156,7 +118,8 @@ const BarChartComponent = ({ data }) => (
       </div>
     </div>
   );
-  
+
+
 
 const CustomizedContent = ({ root, depth, x, y, width, height, index, payload, colors, rank, name, size }) => {
   const fontSize = 12;
@@ -251,28 +214,93 @@ const StraightAnglePieChart = ({ data, title, dataKey, valueKey }) => {
   );
 };
 
-const Dashboard = () => {
+const Top5ProductsTable = ({ data, title }) => {
+  const totalQuantity = data.reduce((sum, item) => sum + item.cantidad, 0);
+  const top6Data = data.slice(0, 6);
+  const othersSum = data.slice(6).reduce((sum, item) => sum + item.cantidad, 0);
+
+  const calculatePercentage = (value) => ((value / totalQuantity) * 100).toFixed(2);
+
+  const chartData = [
+    ...top6Data.map(item => ({
+      name: truncateText(item.producto, 35),
+      value: parseFloat(calculatePercentage(item.cantidad))
+    })),
+    { name: 'Otros', value: parseFloat(calculatePercentage(othersSum)) }
+  ];
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip" style={{ backgroundColor: '#fff', padding: '5px', border: '1px solid #ccc' }}>
+          <p className="label">{`${payload[0].name}: ${payload[0].value}%`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="chart-container">
+      <h2 className="chart-title">{title}</h2>
+      <ResponsiveContainer width="100%" height={350}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            labelLine={true}
+            label={(entry) => `${entry.value}%`}
+            outerRadius={120}
+            fill="#8884d8"
+            dataKey="value"
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="legend-container" style={{ marginTop: '-20px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+      {chartData.map((entry, index) => (
+        <div key={`legend-${index}`} className="legend-item" style={{ display: 'flex', alignItems: 'center', margin: '0 10px 10px 0', minWidth: '200px' }}>
+          <div style={{ width: '20px', height: '20px', backgroundColor: COLORS[index % COLORS.length], marginRight: '10px' }}></div>
+          <span>{entry.name}</span>
+        </div>
+      ))}
+      </div>
+    </div>
+  );
+};
+
+
+const Vendedor = () => {
   const [totalRegistros, setTotalRegistros] = useState(null);
   const [barData, setBarData] = useState([]);
   const [totalValorPremio, setTotalValorPremio] = useState(null); 
-  const [topVendedores, setTopVendedores] = useState([]); // Definición de la variable topVendedores
   const [totalValorPremioCanjeado, setTotalValorPremioCanjeado] = useState(null); 
   const [totalHistoricoRegistros, setTotalHistoricoRegistros] = useState(null);
-  const [pieData, setPieData] = useState([]);
-  const [canal, setCanal] = useState('');
+  const [lineData, setLineData] = useState([]); // Estado para los datos del gráfico de líneas
+  const [vendedor, setVendedor] = useState({ nombre: '', apellido: '' });
   const [marcasRegistradas, setMarcasRegistradas] = useState([]);
   const [productosCanjeados, setProductosCanjeados] = useState([]);
+  const [pieData, setPieData] = useState([]);
+
   const dashboardRef = useRef(null);
+
 
   useEffect(() => {
     const fetchTotalRegistros = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/registros-mes-canal');
+        const response = await axios.get('http://localhost:5000/api/total-filtrado');
+        console.log('Respuesta del servidor:', response.data);
         setTotalRegistros(response.data.totalFilas);
       } catch (error) {
         console.error('Error al obtener el total de registros:', error);
       }
     };
+
     const fetchMarcasRegistradas = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/marcas-mas-registradas');
@@ -303,30 +331,11 @@ const Dashboard = () => {
       }
     };
 
-    const fetchTopVendedores = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/top-vendedores');        
-        // Función para acortar nombre y apellido
-        const getShortName = (fullName) => {
-          const parts = fullName.split(' ');
-          return parts[0]; // Devuelve solo la primera palabra
-        };
-    
-        // Mapear los datos para que tengan las propiedades `name` y `value`
-        const chartData = response.data.map(vendedor => ({
-          name: `${getShortName(vendedor.nombre)} ${getShortName(vendedor.apellido)}`, // Combina nombre y apellido acortados para el eje X
-          value: vendedor.totalFilas // Total de filas para el eje Y
-        }));
-        
-        setTopVendedores(chartData); // Actualización de la variable topVendedores con el nuevo data
-      } catch (error) {
-        console.error('Error al obtener el top de vendedores:', error);
-      }
-    };
-    
+
+    // Define la función para obtener el valor total del premio
     const fetchTotalValorPremio = async () => {
         try {
-          const response = await fetch('http://localhost:5000/api/total-valor-premio-canal');
+          const response = await fetch('http://localhost:5000/api/total-valor-premio');
           if (!response.ok) {
             throw new Error('Error en la solicitud');
           }
@@ -340,7 +349,7 @@ const Dashboard = () => {
 
       const fetchValorCanjeadodelMes = async () => {
         try {
-          const response = await fetch('http://localhost:5000/api/valor-canjeado-del-mes-canal');
+          const response = await fetch('http://localhost:5000/api/valor-canjeado-del-mes');
           if (!response.ok) {
             throw new Error('Error en la solicitud');
           }
@@ -349,6 +358,7 @@ const Dashboard = () => {
           if (Array.isArray(data) && data.length > 0) {
             // Accede al primer objeto del array
             const valorCanjeado = data[0]?.totalValorPremioCanjeado;
+            console.log('Valor Canjeado del Mes:', valorCanjeado);
             setTotalValorPremioCanjeado(valorCanjeado); // Actualiza el estado con el valor total del premio
           } else {
             console.log('No hay datos disponibles.');
@@ -363,7 +373,7 @@ const Dashboard = () => {
 
     const fetchBarData = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/top-10-productos-registrados');
+        const response = await axios.get('http://localhost:5000/api/top-items');
         const items = response.data;
 
         // Transformar los datos obtenidos de la API
@@ -381,7 +391,7 @@ const Dashboard = () => {
 
     const fetchTotalHistoricoRegistros = async () => {
         try {
-          const response = await axios.get('http://localhost:5000/api/registros-historicos-canal');
+          const response = await axios.get('http://localhost:5000/api/registros-historicos');
           setTotalHistoricoRegistros(response.data.totalFilas);
         } catch (error) {
           console.error('Error al obtener el total de registros históricos:', error);
@@ -391,11 +401,16 @@ const Dashboard = () => {
 
       const fetchNombreVendedor = async () => {
         try {
-          const response = await axios.get('http://localhost:5000/api/nombre-canal');
+          const response = await axios.get('http://localhost:5000/api/nombre-vendedor'); // Asegúrate de que esta URL sea la correcta
           const data = response.data;
     
+          // Asegúrate de que `data` es un array y accede al primer elemento
           if (Array.isArray(data) && data.length > 0) {
-            setCanal(data[0].canal);
+            setVendedor({
+              nombre: data[0].nombre,
+              apellido: data[0].apellido
+            });
+            console.log('Correctos los datos del vendedor:', data[0]);
           } else {
             console.log('No se encontraron datos del vendedor.');
           }
@@ -403,37 +418,63 @@ const Dashboard = () => {
           console.error('Error al obtener los datos del vendedor:', error);
         }
       };
-      
 
-      const fetchRegistrosMarcas = async () => {
+      const fetchLineData = async () => {
         try {
-          const response = await fetch('http://localhost:5000/api/categorias-registradas-canal');
-          const data = await response.json();
-          
-          const transformedData = data.map(item => ({
-            name: item.marca,
-            value: item.cantidad
+          const response = await axios.get('http://localhost:5000/api/registros-mensuales');
+          const monthlyRecords = response.data;
+      
+          // Array con los nombres de los meses
+          const monthNames = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+          ];
+      
+          // Transformar los datos obtenidos de la API
+          const transformedData = monthlyRecords.map(record => ({
+            month: monthNames[record.mes - 1], // Mapear el número del mes al nombre del mes
+            value: record.totalRegistros
           }));
       
-          setPieData(transformedData);
+          // Actualizar el estado con los datos transformados
+          setLineData(transformedData);
         } catch (error) {
-          console.error('Error fetching data PieData:', error);
-          setPieData([]);
+          console.error('Error al obtener los datos de registros mensuales:', error);
         }
       };
       
       
-    fetchRegistrosMarcas();
+      const fetchPieData = async () => {
+        try {
+          const response = await fetch('http://localhost:5000/api/categorias-registradas');
+          const data = await response.json();
+          
+          const total = data.reduce((acc, item) => acc + item.cantidad, 0);
+          const transformedData = data.map(item => ({
+            name: item.marca,
+            value: (item.cantidad / total * 100).toFixed(2) // Calcula el porcentaje
+          }));
+      
+          setPieData(transformedData);
+          console.log('Datos de PieChart:', data);
+        } catch (error) {
+          console.error('Error fetching data PieData:', error);
+          setPieData([]); // Asegúrate de establecer un array vacío en caso de error
+        }
+      };
+      
+      
+    fetchPieData();
     fetchTotalRegistros();
     fetchBarData();
     fetchTotalValorPremio();
     fetchValorCanjeadodelMes();
     fetchTotalHistoricoRegistros();
+    fetchLineData(); 
     fetchNombreVendedor();
-    fetchTopVendedores();
     fetchMarcasRegistradas();
     fetchProductosCanjeados();
-    
+
     const saveDashboardAsJPEG = () => {
       const options = {
         useCORS: true,
@@ -454,7 +495,7 @@ const Dashboard = () => {
 
         // Enviar la imagen por correo
         axios.post('https://serviciosmovil.siglo21.net:8443/api/enviarCorreo', {
-          correo: 'a@gmail.com',
+          correo: 'amoran@siglo21.net',
           asunto: 'Prueba Dashboard DeWallet✅',
           cuerpo: `<!DOCTYPE html>
                 <html lang="es">
@@ -507,10 +548,9 @@ const Dashboard = () => {
         <div className="dashboard-header">
           <img src="/dewallet.png" alt="DeWallet Logo" className="dashboard-logo" />
         </div>
-        <h2 className="chart-title-principal">Hola {canal}, este es tu resumen en DeWallet hasta el momento</h2>
-       <div className="info-cards-container">
-      <div className="info-cards-group">
-        
+        <h2 className="chart-title-principal">Hola {vendedor.nombre} {vendedor.apellido}, este es tu resumen en DeWallet hasta el momento</h2>
+        <div className="info-cards-container">
+      <div className="info-cards-group">  
         <InfoCard
           values={[
             {
@@ -546,17 +586,17 @@ const Dashboard = () => {
           ]}
         />
       </div>
-    </div>
-        <div className="charts-row">
-          <div className="chart-container">
-            <LineChartComponent data={topVendedores} />
-          </div>
-          <div className="chart-container">
-            <MarcasCanjeadasBarChart data={pieData} />
-          </div>
+        </div>
+    <div className="charts-row">
+        <BarChartComponent data={barData} />
         </div>
         <div className="charts-row">
-        <BarChartComponent data={barData} />
+          <div className="chart-container">
+            <LineChartComponent data={lineData} />
+          </div>
+          <div className="chart-container">
+            <PieChartComponent data={pieData} />
+          </div>
         </div>
         <h1 className="chart-second-title">Información DeWallet</h1>
         <div className="charts-row">
@@ -575,7 +615,7 @@ const Dashboard = () => {
             />
           </div>
         </div>
-  <div className="pie-pagina">
+        <div className="pie-pagina">
         <img src="/dewallet.png" alt="DeWallet Logo" className="dashboard-logo" />
         <h2>Para mayor información comunícate con:</h2>
         <h2 className="nombre">Michael Guevara</h2>
@@ -590,12 +630,10 @@ const Dashboard = () => {
             </h3>
         </div>
       </div>
-      
       </div>
     </div>
-    
     
   );
 };
 
-export default Dashboard;
+export default Vendedor;
