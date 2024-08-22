@@ -14,18 +14,10 @@ const truncateText = (text, maxLength) => {
 // Colores para el gráfico de pastel
 const COLORS = ['#004e98', '#3a6ea5', '#1b4965', '#ffa62b', '#e07a5f', '#f58549', '#0fa3b1' ];
 
-// Datos para gráficos
-/*const pieData = [
-  { name: 'MONITORES GAMING', value: 33.20 },
-  { name: 'HP - Computadoras Consumo', value: 26.13 },
-  { name: 'EPSON IMPRESION', value: 15.52 },
-  { name: 'OTROS', value: 25.15 },
-];*/
-
 
 const BarChartComponent = ({ data }) => (
     <div className="chart-container">
-      <h2 className="chart-title">Tus productos más registrados este año</h2>
+      <h2 className="chart-title">Tus productos más registrados hasta ahora</h2>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data} layout="vertical" margin={{ right: 100, left: 10 }}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -49,8 +41,6 @@ const BarChartComponent = ({ data }) => (
       </ResponsiveContainer>
     </div>
   );
-
-
 
   const PieChartComponent = ({ data }) => {
     console.log('Datos en PieChartComponent:', data);
@@ -88,8 +78,6 @@ const BarChartComponent = ({ data }) => (
     );
   };
   
-  
-
 const LineChartComponent = ({ data }) => (
     <div className="chart-container">
       <h2 className="chart-title">Tus últimos registros</h2>
@@ -118,7 +106,6 @@ const LineChartComponent = ({ data }) => (
       </div>
     </div>
   );
-
 
 
 const CustomizedContent = ({ root, depth, x, y, width, height, index, payload, colors, rank, name, size }) => {
@@ -172,7 +159,6 @@ const CustomizedContent = ({ root, depth, x, y, width, height, index, payload, c
     </g>
   );
 };
-
 
 const StraightAnglePieChart = ({ data, title, dataKey, valueKey }) => {
   const totalValue = data.reduce((sum, entry) => sum + entry[valueKey], 0);
@@ -274,7 +260,6 @@ const Top5ProductsTable = ({ data, title }) => {
   );
 };
 
-
 const Vendedor = () => {
   const [totalRegistros, setTotalRegistros] = useState(null);
   const [barData, setBarData] = useState([]);
@@ -286,9 +271,7 @@ const Vendedor = () => {
   const [marcasRegistradas, setMarcasRegistradas] = useState([]);
   const [productosCanjeados, setProductosCanjeados] = useState([]);
   const [pieData, setPieData] = useState([]);
-
   const dashboardRef = useRef(null);
-
 
   useEffect(() => {
     const fetchTotalRegistros = async () => {
@@ -306,7 +289,6 @@ const Vendedor = () => {
         const response = await axios.get('http://localhost:5000/api/marcas-mas-registradas');
         let marcasRegistradas = response.data;
     
-        // Si hay más de 5 marcas, agrupar las demás en "OTRAS"
         if (marcasRegistradas.length > 5) {
           const top5Marcas = marcasRegistradas.slice(0, 5);
           const otras = {
@@ -321,7 +303,6 @@ const Vendedor = () => {
       }
     };
     
-
     const fetchProductosCanjeados = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/productos-mas-canjeados');
@@ -330,7 +311,6 @@ const Vendedor = () => {
         console.error('Error al obtener los productos más canjeados:', error);
       }
     };
-
 
     // Define la función para obtener el valor total del premio
     const fetchTotalValorPremio = async () => {
@@ -442,8 +422,7 @@ const Vendedor = () => {
           console.error('Error al obtener los datos de registros mensuales:', error);
         }
       };
-      
-      
+        
       const fetchPieData = async () => {
         try {
           const response = await fetch('http://localhost:5000/api/categorias-registradas');
@@ -462,8 +441,7 @@ const Vendedor = () => {
           setPieData([]); // Asegúrate de establecer un array vacío en caso de error
         }
       };
-      
-      
+          
     fetchPieData();
     fetchTotalRegistros();
     fetchBarData();
@@ -487,15 +465,13 @@ const Vendedor = () => {
       .then(canvas => {
         const imgData = canvas.toDataURL('image/jpeg');
 
-        // Descargar la imagen
         const link = document.createElement('a');
         link.href = imgData;
         link.download = 'dashboard-dewallet.jpg';
         link.click();
 
-        // Enviar la imagen por correo
         axios.post('https://serviciosmovil.siglo21.net:8443/api/enviarCorreo', {
-          correo: 'amoran@siglo21.net',
+          correo: 'a',
           asunto: 'Prueba Dashboard DeWallet✅',
           cuerpo: `<!DOCTYPE html>
                 <html lang="es">
@@ -554,7 +530,7 @@ const Vendedor = () => {
         <InfoCard
           values={[
             {
-              value: totalRegistros !== null ? totalRegistros.toLocaleString() : 'Cargando...',
+              value: totalRegistros !== null ? totalRegistros.toLocaleString() : '0',
               description: 'registros en julio',
             },
           ]}
@@ -562,7 +538,7 @@ const Vendedor = () => {
         <InfoCard
           values={[
             {
-              value: totalValorPremioCanjeado !== null ? `$${totalValorPremioCanjeado.toLocaleString()}` : 'Cargando...',
+              value: totalValorPremioCanjeado !== null ? `$${totalValorPremioCanjeado.toLocaleString()}` : '$0',
               description: 'registrado en julio',
             },
           ]}
@@ -572,7 +548,7 @@ const Vendedor = () => {
         <InfoCard
           values={[
             {
-              value: totalHistoricoRegistros !== null ? `${totalHistoricoRegistros.toLocaleString()}` : 'Cargando...',
+              value: totalHistoricoRegistros !== null ? `${totalHistoricoRegistros.toLocaleString()}` : '0',
               description: 'histórico de registros',
             },
           ]}
@@ -580,23 +556,35 @@ const Vendedor = () => {
         <InfoCard
           values={[
             {
-              value: totalValorPremio !== null ? `$${totalValorPremio.toLocaleString()}` : 'Cargando...',
+              value: totalValorPremio !== null ? `$${totalValorPremio.toLocaleString()}` : '$0',
               description: 'histórico canjeado',
             },
           ]}
         />
       </div>
         </div>
-    <div className="charts-row">
-        <BarChartComponent data={barData} />
+        <div className="charts-row">
+          {barData && barData.length > 0 ? (
+            <BarChartComponent data={barData} />
+          ) : (
+            <h1>No tienes productos registrados este año</h1>
+          )}
         </div>
         <div className="charts-row">
-          <div className="chart-container">
+        <div className="chart-container">
+          {lineData && lineData.length > 0 ? (
             <LineChartComponent data={lineData} />
-          </div>
-          <div className="chart-container">
+          ) : (
+            <h1>No cuenta registros estos últimos meses</h1>
+          )}
+        </div>
+        <div className="chart-container">
+          {pieData && pieData.length > 0 ? (
             <PieChartComponent data={pieData} />
-          </div>
+          ) : (
+            <h1>No cuenta con marcas registradas</h1>
+          )}
+        </div>
         </div>
         <h1 className="chart-second-title">Información DeWallet</h1>
         <div className="charts-row">

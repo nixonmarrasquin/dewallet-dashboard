@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap, LineChart, Line, LabelList } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LabelList } from 'recharts';
 import html2canvas from 'html2canvas';
 import axios from 'axios';
 import './Dashboard.css';
@@ -26,7 +26,7 @@ const COLORS = ['#004e98', '#3a6ea5', '#1b4965', '#ffa62b', '#e07a5f', '#f58549'
 
 const BarChartComponent = ({ data }) => (
     <div className="chart-container">
-      <h2 className="chart-title">Productos más registrados este año</h2>
+      <h2 className="chart-title">Productos más registrados hasta ahora</h2>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data} layout="vertical" margin={{ right: 100, left: 10 }}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -51,13 +51,40 @@ const BarChartComponent = ({ data }) => (
     </div>
   );
 
+  const BarChartComponentCiudad = ({ data }) => (
+    <div className="chart-container">
+      <h2 className="chart-title">Cantidad de Productos Registrados</h2>
+      <ResponsiveContainer width="100%" height={350}>
+        <BarChart data={data} layout="vertical" margin={{ right: 100, left: 1 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            type="number" 
+            domain={[0, Math.max(...data.map(item => item.value)) + 10]} 
+          />
+          <YAxis
+            dataKey="name"
+            type="category"
+            tickFormatter={(value) => truncateText(value, 50)}
+            tick={{ fontSize: 16 }}
+            width={300}
+          />
+          <Tooltip />
+          <Bar dataKey="value" fill="#14213d" barSize={50}>
+            {/* Aquí agregamos el LabelList para mostrar los valores en cada barra */}
+            <LabelList dataKey="value" position="right" />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+
   const PieChartComponent = ({ data }) => {
     console.log('Datos en PieChartComponent:', data);
   
     // Ensure data is in the correct format
     const processedData = data.map(item => ({
       name: item.name,
-      value: parseFloat(item.value) // Ensure value is a number
+      value: parseFloat(item.value)
     }));
   
     return (
@@ -113,73 +140,20 @@ const BarChartComponent = ({ data }) => (
     </div>
   );
 
-const Top5ProductsTable = ({ data, title }) => {
-  const totalQuantity = data.reduce((sum, item) => sum + item.cantidad, 0);
-  const top6Data = data.slice(0, 8);
-  const othersSum = data.slice(8).reduce((sum, item) => sum + item.cantidad, 0);
-
-  const calculatePercentage = (value) => ((value / totalQuantity) * 100).toFixed(2);
-
-  const chartData = [
-    ...top6Data.map(item => ({
-      name: truncateText(item.producto, 35),
-      value: parseFloat(calculatePercentage(item.cantidad))
-    })),
-    { name: 'Otros', value: parseFloat(calculatePercentage(othersSum)) }
-  ];
-
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="custom-tooltip" style={{ backgroundColor: '#fff', padding: '5px', border: '1px solid #ccc' }}>
-          <p className="label">{`${payload[0].name}: ${payload[0].value}%`}</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  return (
-    <div className="chart-container">
-      <h2 className="chart-title">{title}</h2>
-      <ResponsiveContainer width="100%" height={350}>
-        <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            labelLine={true}
-            label={(entry) => `${entry.value}%`}
-            outerRadius={120}
-            fill="#8884d8"
-            dataKey="value"
-          >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-        </PieChart>
-      </ResponsiveContainer>
-      <div className="legend-container" style={{ marginTop: '-20px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-      {chartData.map((entry, index) => (
-        <div key={`legend-${index}`} className="legend-item" style={{ display: 'flex', alignItems: 'center', margin: '0 10px 10px 0', minWidth: '200px' }}>
-          <div style={{ width: '20px', height: '20px', backgroundColor: COLORS[index % COLORS.length], marginRight: '10px' }}></div>
-          <span>{entry.name}</span>
-        </div>
-      ))}
-      </div>
-    </div>
-  );
-};
 
 
 const Marca = () => {
   const [totalRegistros, setTotalRegistros] = useState(null);
   const [barData, setBarData] = useState([]);
+  const [barDataCiudad, setBarDataCiudad] = useState([]);
   const [totalValorPremio, setTotalValorPremio] = useState(null); 
   const [totalValorPremioCanjeado, setTotalValorPremioCanjeado] = useState(null); 
-  const [totalHistoricoRegistros, setTotalHistoricoRegistros] = useState(null);
+  const [totalHistoricoRegistros, setTotalClientes] = useState(null);
+
+  const [totalHistoricoClientes, setTotalHistoricoClientes] = useState(null);
+  const [totalHistoricoRegistrosMarca, setRegistroHistoricoMarcas] = useState(null);
+  const [totalHistoricoValorRegistros, setCantidadRegistros] = useState(null);
+
   const [lineData, setLineData] = useState([]); // Estado para los datos del gráfico de líneas
   const [vendedor, setVendedor] = useState({ nombre: '', apellido: '' });
   const [marcasRegistradas, setMarcasRegistradas] = useState([]);
@@ -248,33 +222,85 @@ const Marca = () => {
       };
       
 ////LISTO
-    const fetchBarData = async () => {
+const fetchBarData = async () => {
+  try {
+    const response = await axios.get('http://localhost:5000/api/productos-marca');
+    const items = response.data;
+
+    // Transformar los datos obtenidos de la API
+    const transformedData = items.map(item => ({
+      name: item.descripcion,
+      value: item.cantidad
+    }));
+
+    // Obtener solo los primeros 5 elementos
+    const limitedData = transformedData.slice(0, 5);
+
+    // Actualizar el estado con los datos transformados y limitados
+    setBarData(limitedData);
+  } catch (error) {
+    console.error('Error al obtener los datos de productos:', error);
+  }
+};
+
+    const fetchBarDataCiudad = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/productos-marca');
+        const response = await axios.get('http://localhost:5000/api/ruc-clientes-marca');
         const items = response.data;
 
         // Transformar los datos obtenidos de la API
         const transformedData = items.map(item => ({
-          name: item.descripcion,
+          name: item.ciudad,
           value: item.cantidad
         }));
 
         // Actualizar el estado con los datos transformados
-        setBarData(transformedData);
+        setBarDataCiudad(transformedData);
       } catch (error) {
         console.error('Error al obtener los datos de productos:', error);
       }
     };
 ////LISTO
-    const fetchTotalHistoricoRegistros = async () => {
+    const fetchTotalClientes = async () => {
         try {
           const response = await axios.get('http://localhost:5000/api/cantidad-clientes-marca');
-          setTotalHistoricoRegistros(response.data.cantidadClientes);
+          setTotalClientes(response.data.cantidadClientes);
         } catch (error) {
           console.error('Error al obtener el total de registros históricos:', error);
-          setTotalHistoricoRegistros(null);
+          setTotalClientes(null);
         }
       };
+
+      const fetchTotalHistoricoClientes = async () => {
+        try {
+          const response = await axios.get('http://localhost:5000/api/cantidad-historico-clientes-marca');
+          setTotalHistoricoClientes(response.data.cantidadClientes);
+        } catch (error) {
+          console.error('Error al obtener el total de registros históricos:', error);
+          setTotalHistoricoClientes(null);
+        }
+      };
+
+      const fetchTotalHistoricoRegistros = async () => {
+        try {
+          const response = await axios.get('http://localhost:5000/api/cantidad-historico-valor-marca');
+          setRegistroHistoricoMarcas(response.data.totalValorPremio);
+        } catch (error) {
+          console.error('Error al obtener el total de registros históricos:', error);
+          setRegistroHistoricoMarcas(null);
+        }
+      };
+
+      const fetchCantidadHistoricoRegistros = async () => {
+        try {
+          const response = await axios.get('http://localhost:5000/api/cantidad-historico-registros-marca');
+          setCantidadRegistros(response.data.cantidad);
+        } catch (error) {
+          console.error('Error al obtener el total de registros históricos:', error);
+          setCantidadRegistros(null);
+        }
+      };
+
 
       const fetchLineData = async () => {
         try {
@@ -348,9 +374,13 @@ const Marca = () => {
     fetchBarData();
     fetchTotalValorPremio();
     fetchValorCanjeadodelMes();
-    fetchTotalHistoricoRegistros();
+    fetchTotalClientes();
     fetchLineData(); 
     fetchProductosCanjeados();
+    fetchBarDataCiudad();
+    fetchTotalHistoricoClientes();
+    fetchTotalHistoricoRegistros();
+    fetchCantidadHistoricoRegistros();
 
     const saveDashboardAsJPEG = () => {
       const options = {
@@ -372,7 +402,7 @@ const Marca = () => {
 
         // Enviar la imagen por correo
         axios.post('https://serviciosmovil.siglo21.net:8443/api/enviarCorreo', {
-          correo: 'amoran@siglo21.net',
+          correo: 'a',
           asunto: 'Prueba Dashboard DeWallet✅',
           cuerpo: `<!DOCTYPE html>
                 <html lang="es">
@@ -425,13 +455,13 @@ const Marca = () => {
         <div className="dashboard-header">
           <img src="/dewallet.png" alt="DeWallet Logo" className="dashboard-logo" />
         </div>
-        <h2 className="chart-title-principal">DELL, este es tu resumen en DeWallet hasta el momento</h2>
+        <h2 className="chart-title-principal">Hola, este es tu resumen en DeWallet hasta el momento</h2>
         <div className="info-cards-container">
       <div className="info-cards-group">  
         <InfoCard
           values={[
             {
-              value: totalRegistros !== null ? totalRegistros.toLocaleString() : 'Cargando...',
+              value: totalRegistros !== null ? totalRegistros.toLocaleString() : '0',
               description: '',
             },
           ]}
@@ -449,7 +479,7 @@ const Marca = () => {
         <InfoCard
           values={[
             {
-              value: totalHistoricoRegistros !== null ? `${totalHistoricoRegistros.toLocaleString()}` : 'Cargando...',
+              value: totalHistoricoRegistros !== null ? `${totalHistoricoRegistros.toLocaleString()}` : '0',
               description: 'clientes participando',
             },
           ]}
@@ -457,28 +487,72 @@ const Marca = () => {
         <InfoCard
           values={[
             {
-              value: totalValorPremio !== null ? `$${totalValorPremio.toLocaleString()}` : 'Cargando...',
+              value: totalValorPremio !== null ? `$${totalValorPremio.toLocaleString()}` : '0',
               description: 'valor registrado en Julio',
             },
           ]}
         />
       </div>
+    
         </div>
+        <div className="charts-row-row">
+  <div className="title-container">
+  <h1 className="custom-title">Histórico</h1>
+ 
+  </div>
+  <div className="custom-underline"></div>
+  <div className="info-cards-container">
+    <InfoCard
+      values={[
+        {
+          value: totalHistoricoClientes !== null ? `${totalHistoricoClientes.toLocaleString()}` : '0',
+          description: 'clientes',
+        },
+      ]}
+    />
+    <InfoCard
+      values={[
+        {
+          value: totalHistoricoValorRegistros !== null ? `${totalHistoricoValorRegistros.toLocaleString()}` : '0',
+          description: 'productos registrados',
+        },
+      ]}
+    />
+    <InfoCard
+      values={[
+        {
+          value: totalHistoricoRegistrosMarca !== null ? `$${totalHistoricoRegistrosMarca.toLocaleString()}` : '0',
+          description: 'valor registrado',
+        },
+      ]}
+    />
+  </div>
+</div>
+
     <div className="charts-row">
-        <BarChartComponent data={barData} />
+        <>
+          {barData && barData.length > 0 ? (
+            <BarChartComponent data={barData} />
+          ) : (
+            <div>No existen registros</div>
+          )}
+        </>
         </div>
         <div className="charts-row">
           <div className="chart-container">
             <PieChartComponent data={pieData} />
           </div>
         </div>
-        <h1 className="chart-second-title">Información por ciudades</h1>
+        <h1 className="chart-second-title">Participación por Ciudades</h1>
         <div className="charts-row">
           <div className="chart-container">
-          <Top5ProductsTable  
-              data={productosCanjeados} 
-              title="Productos populares en DeWallet" 
-            />
+          <>
+          {barDataCiudad && barDataCiudad.length > 0 ? (
+            <BarChartComponentCiudad data={barDataCiudad} />
+          ) : (
+            <div>No existen registros</div>
+          )}
+        </>
           </div>
         </div>
         <div className="pie-pagina">

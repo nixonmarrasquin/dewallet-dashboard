@@ -510,29 +510,28 @@ const Dashboard = () => {
         <h2 className="chart-title-principal">Hola {canal}, este es tu resumen en DeWallet hasta el momento</h2>
        <div className="info-cards-container">
       <div className="info-cards-group">
-        
         <InfoCard
           values={[
             {
-              value: totalRegistros !== null ? totalRegistros.toLocaleString() : 'Cargando...',
+              value: totalRegistros !== null ? totalRegistros.toLocaleString() : '0',
               description: 'registros en julio',
             },
           ]}
         />
-        <InfoCard
-          values={[
-            {
-              value: totalValorPremioCanjeado !== null ? `$${totalValorPremioCanjeado.toLocaleString()}` : 'Cargando...',
-              description: 'registrado en julio',
-            },
-          ]}
-        />
+      <InfoCard
+        values={[
+          {
+            value: totalValorPremioCanjeado ? `$${totalValorPremioCanjeado.toLocaleString()}` : '$0',
+            description: 'registrado en julio',
+          },
+        ]}
+      />
       </div>
       <div className="info-cards-group">
         <InfoCard
           values={[
             {
-              value: totalHistoricoRegistros !== null ? `${totalHistoricoRegistros.toLocaleString()}` : 'Cargando...',
+              value: totalHistoricoRegistros !== null ? `${totalHistoricoRegistros.toLocaleString()}` : '0',
               description: 'histórico de registros',
             },
           ]}
@@ -540,7 +539,7 @@ const Dashboard = () => {
         <InfoCard
           values={[
             {
-              value: totalValorPremio !== null ? `$${totalValorPremio.toLocaleString()}` : 'Cargando...',
+              value: totalValorPremio !== null ? `$${totalValorPremio.toLocaleString()}` : '0',
               description: 'histórico canjeado',
             },
           ]}
@@ -548,16 +547,29 @@ const Dashboard = () => {
       </div>
     </div>
         <div className="charts-row">
-          <div className="chart-container">
+        <div className="chart-container">
+          {topVendedores && topVendedores.length > 0 ? (
             <LineChartComponent data={topVendedores} />
-          </div>
-          <div className="chart-container">
+          ) : (
+            <h1>Tus usuarios no han participado este mes en DeWallet</h1>
+          )}
+        </div>
+        <div className="chart-container">
+          {pieData && pieData.length > 0 ? (
             <MarcasCanjeadasBarChart data={pieData} />
-          </div>
+          ) : (
+            <h1>No has registrado productos este mes en DeWallet</h1>
+          )}
+        </div>
         </div>
         <div className="charts-row">
-        <BarChartComponent data={barData} />
+          {barData && barData.length > 0 ? (
+            <BarChartComponent data={barData} />
+          ) : (
+            <h1>No tienes productos registrados en DeWallet</h1>
+          )}
         </div>
+
         <h1 className="chart-second-title">Información DeWallet</h1>
         <div className="charts-row">
           <div className="chart-container">

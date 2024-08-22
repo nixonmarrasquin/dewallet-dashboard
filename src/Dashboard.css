@@ -31,7 +31,7 @@ body {
 
 .dashboard {
   padding: 16px;
-  background-color: #f7fafc;
+  background-color:transparent;
   min-width: 990px;
 }
 
@@ -59,12 +59,32 @@ body {
   text-align: center;
 }
 
+.title-container {
+  margin-bottom: -10px;
+  margin-top: -30px;
+}
+
+.custom-title {
+  font-size: 3.5rem;
+  margin-bottom: 1px; 
+  text-align: center; 
+  text-decoration: underline;
+}
+
+
 .chart-title-principal {
   font-size: 2rem;
   font-weight: 600;
   margin-bottom: 8px;
   text-align: center;
   margin-top: -15px;
+}
+.custom-underline {
+  width:50%; /* Ajusta el largo de la línea */
+  height: 7px; /* Ajusta el grosor de la línea */
+  background-color: black;
+  margin-top: -3px;
+  margin-bottom: -20px;
 }
 
 .chart-second-title {
@@ -79,11 +99,10 @@ body {
 
 .info-cards-container {
   display: flex;
-  justify-content: space-between;
-  width: 100%;
-  margin-bottom: 0px; /* Ajusta según sea necesario */
+  justify-content: center;
+  gap: 10px; /* Ajusta este valor para controlar la distancia entre las tarjetas */
+  margin-top: 20px; /* Ajusta este valor para controlar la distancia superior */
 }
-
 .info-cards-group {
   display: flex;
   width: 48%;
@@ -137,6 +156,19 @@ body {
   margin-bottom: 15px;
   padding-bottom: -100px;
   height: auto !important;
+}
+.charts-row-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra el contenido horizontalmente */
+  text-align: center;
+  background-color: white;
+  margin-right: 8px;
+  margin-left: 8px;
+  border-radius: 8px;
+  align-items: center; 
+  text-align: center; 
+  margin-bottom: 10px;
 }
 
 .chart-container {
