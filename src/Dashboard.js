@@ -107,10 +107,12 @@ const BarChartComponent = ({ data }) => (
       name: item.name,
       value: parseFloat(item.value)
     }));
+    const mes = process.env.REACT_APP_MES;
+
   
     return (
       <div className="chart-container">
-        <h2 className="chart-title">Tus marcas - Julio</h2>
+        <h2 className="chart-title">Tus marcas - {mes}</h2>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={processedData} layout="vertical" margin={{ right: 20, left: 40 }}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -252,6 +254,7 @@ const StraightAnglePieChart = ({ data, title, dataKey, valueKey }) => {
 };
 
 const Dashboard = () => {
+  const mes = process.env.REACT_APP_MES;
   const [totalRegistros, setTotalRegistros] = useState(null);
   const [barData, setBarData] = useState([]);
   const [totalValorPremio, setTotalValorPremio] = useState(null); 
@@ -263,6 +266,7 @@ const Dashboard = () => {
   const [marcasRegistradas, setMarcasRegistradas] = useState([]);
   const [productosCanjeados, setProductosCanjeados] = useState([]);
   const dashboardRef = useRef(null);
+  console.log('MES:', mes); // Depura para ver si la variable está definida
 
   useEffect(() => {
     const fetchTotalRegistros = async () => {
@@ -514,7 +518,7 @@ const Dashboard = () => {
           values={[
             {
               value: totalRegistros !== null ? totalRegistros.toLocaleString() : '0',
-              description: 'registros en julio',
+              description: `registros en ${mes}`,
             },
           ]}
         />
@@ -522,7 +526,7 @@ const Dashboard = () => {
         values={[
           {
             value: totalValorPremioCanjeado ? `$${totalValorPremioCanjeado.toLocaleString()}` : '$0',
-            description: 'registrado en julio',
+            description: `registrado en ${mes}`,
           },
         ]}
       />
@@ -532,7 +536,7 @@ const Dashboard = () => {
           values={[
             {
               value: totalHistoricoRegistros !== null ? `${totalHistoricoRegistros.toLocaleString()}` : '0',
-              description: 'histórico de registros',
+              description: `histórico de registros`,
             },
           ]}
         />
@@ -540,7 +544,7 @@ const Dashboard = () => {
           values={[
             {
               value: totalValorPremio !== null ? `$${totalValorPremio.toLocaleString()}` : '0',
-              description: 'histórico canjeado',
+              description: `histórico canjeado`,
             },
           ]}
         />

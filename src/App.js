@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Dashboard from './Dashboard';
 import Vendedor from './Vendedor'; // Asegúrate de crear este componente
 import Marca from './Marca'; // Asegúrate de crear este componente
+import MapaEcuador from './MapaEcuador';
 import './App.css';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/vendedor" element={<Vendedor />} />
           <Route path="/marca" element={<Marca />} />
+          <Route path="/mapa" element={<MapaEcuador />} />
         </Routes>
       </div>
     </Router>

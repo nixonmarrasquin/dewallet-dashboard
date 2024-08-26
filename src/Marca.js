@@ -4,6 +4,8 @@ import html2canvas from 'html2canvas';
 import axios from 'axios';
 import './Dashboard.css';
 import { Phone, Mail } from 'lucide-react';
+import MapaEcuador from './MapaEcuador'; // Asegúrate de que la ruta sea correcta
+
 
 
 // Truncar texto largo
@@ -20,9 +22,24 @@ function truncateText(text, maxLength) {
     return text;
 }
 
-
 // Colores para el gráfico de pastel
-const COLORS = ['#004e98', '#3a6ea5', '#1b4965', '#ffa62b', '#e07a5f', '#f58549', '#0fa3b1' ];
+const COLORS = [
+  '#004e98', // Azul oscuro
+  'black', // Negro
+  '#ffa62b', // Naranja
+  '#e07a5f', // Coral
+  '#f58549', // Naranja claro
+  '#0fa3b1', // Turquesa
+  '#81b29a', // Verde menta
+  '#ffcc29', // Amarillo
+  '#e63946', // Rojo
+  '#6a0572', // Púrpura oscuro
+  '#b5179e', // Magenta
+  '#720e3a', // Rojo vino
+  '#d9bf77', // Beige
+  '#a0c4ff', // Azul claro
+  '#84a59d'  // Verde grisáceo
+];
 
 const BarChartComponent = ({ data }) => (
     <div className="chart-container">
@@ -51,7 +68,7 @@ const BarChartComponent = ({ data }) => (
     </div>
   );
 
-  const BarChartComponentCiudad = ({ data }) => (
+const BarChartComponentCiudad = ({ data }) => (
     <div className="chart-container">
       <h2 className="chart-title">Cantidad de Productos Registrados</h2>
       <ResponsiveContainer width="100%" height={350}>
@@ -87,9 +104,11 @@ const BarChartComponent = ({ data }) => (
       value: parseFloat(item.value)
     }));
   
+    const mes = process.env.REACT_APP_MES; 
+
     return (
       <div className="chart-container">
-        <h2 className="chart-title">Participación de Clientes - Julio</h2>
+        <h2 className="chart-title">Participación de Clientes - {mes}</h2>
         <ResponsiveContainer width="100%" height={350}>
           <PieChart>
             <Pie
@@ -448,6 +467,8 @@ const fetchBarData = async () => {
       window.removeEventListener('resize', ensureWindowSize);
     };
   }, []);
+  const mes = process.env.REACT_APP_MES; // Valor de la variable de entorno
+
 
   return (
     <div className="dashboard">
@@ -470,7 +491,7 @@ const fetchBarData = async () => {
           values={[
             {
               value: '',
-              description: 'registros de productos en Julio',
+              description: `registros de productos en ${mes}`,
             },
           ]}
         />
@@ -480,7 +501,7 @@ const fetchBarData = async () => {
           values={[
             {
               value: totalHistoricoRegistros !== null ? `${totalHistoricoRegistros.toLocaleString()}` : '0',
-              description: 'clientes participando',
+              description: `clientes en ${mes}`,
             },
           ]}
         />
@@ -488,7 +509,7 @@ const fetchBarData = async () => {
           values={[
             {
               value: totalValorPremio !== null ? `$${totalValorPremio.toLocaleString()}` : '0',
-              description: 'valor registrado en Julio',
+              description: `valor registrado en ${mes}`,
             },
           ]}
         />
@@ -514,7 +535,7 @@ const fetchBarData = async () => {
       values={[
         {
           value: totalHistoricoValorRegistros !== null ? `${totalHistoricoValorRegistros.toLocaleString()}` : '0',
-          description: 'productos registrados',
+          description: 'registros',
         },
       ]}
     />
@@ -546,13 +567,14 @@ const fetchBarData = async () => {
         <h1 className="chart-second-title">Participación por Ciudades</h1>
         <div className="charts-row">
           <div className="chart-container">
-          <>
+        {/*  <>
           {barDataCiudad && barDataCiudad.length > 0 ? (
             <BarChartComponentCiudad data={barDataCiudad} />
           ) : (
             <div>No existen registros</div>
           )}
-        </>
+        </>*/}
+        <MapaEcuador />
           </div>
         </div>
         <div className="pie-pagina">

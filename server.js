@@ -4,8 +4,12 @@ const cors = require('cors'); // Importa el middleware CORS
 const puppeteer = require('puppeteer');
 const hanaClient = require('@sap/hana-client');
 const app = express();
-const fs = require('fs');
+const fs = require('fs'); // Para operaciones basadas en callbacks
+const fsPromises = require('fs').promises; // Para operaciones basadas en promesas
 const axios = require('axios');
+const path = require('path');
+const nodemailer = require('nodemailer');
+
 
 app.use(cors({
     origin: ['http://localhost:3000', 'https://serviciosmovil.siglo21.net:8443']
@@ -73,10 +77,19 @@ const generateDashboardImage = async (email) => {
 
     await wait(20000);
 
-    // Guarda la imagen con el nombre basado en el código de canal actual
-    await page.screenshot({ path: `dashboard_${CODIGO_CANAL}_JULIO.png`, fullPage: true });
-    //await enviarCorreo(email, `dashboard_${CODIGO_CANAL}_JULIO.png`);
+    await page.evaluate(() => {
+      document.body.style.background = 'transparent';
+    });
+
+    // Guarda la imagen con fondo transparente
+    await page.screenshot({ 
+      path: `dashboard_${CODIGO_CANAL}_${MES}.png`, 
+      fullPage: true,
+      omitBackground: true  // Esto hará que el fondo sea transparente
+    });
+
     console.log(`Imagen del dashboard generada con éxito para el código ${CODIGO_CANAL}!`);
+    //await enviarCorreo(email, `dashboard_${CODIGO_CANAL}_${MES}.png`);
     await browser.close();
   } catch (error) {
     console.error(`Error al generar la imagen para el código ${CODIGO_CANAL}:`, error);
@@ -93,13 +106,22 @@ const generateDashboardImageVendedor = async (email) => {
       waitUntil: 'networkidle0',
     });
 
-    await wait(20000); // Espera 15 segundos
+    await wait(20000); // Espera 20 segundos
 
-    // Guarda la imagen con el nombre basado en el código de canal actual
-    await page.screenshot({ path: `dashboard_${CODIGO_VENDEDOR}_JULIO.png`, fullPage: true });
+    // Establece el fondo como transparente
+    await page.evaluate(() => {
+      document.body.style.background = 'transparent';
+    });
+
+    // Guarda la imagen con fondo transparente
+    await page.screenshot({ 
+      path: `dashboard_${CODIGO_VENDEDOR}_${MES}.png`, 
+      fullPage: true,
+      omitBackground: true  // Esto hará que el fondo sea transparente
+    });
 
     console.log(`Imagen del dashboard generada con éxito para el código ${CODIGO_VENDEDOR}!`);
-    //await enviarCorreo(email, `dashboard_${CODIGO_VENDEDOR}_JULIO.png`);
+    //await enviarCorreo(email, `dashboard_${CODIGO_VENDEDOR}_${MES}.png`);
     await browser.close();
   } catch (error) {
     console.error(`Error al generar la imagen para el código ${CODIGO_VENDEDOR}:`, error);
@@ -118,11 +140,20 @@ const generateDashboardImageMarca = async (email) => {
 
     await wait(25000); 
 
-    // Guarda la imagen con el nombre basado en el código de canal actual
-    await page.screenshot({ path: `dashboard_${MARCA}_JULIO.png`, fullPage: true });
+    // Modifica estas líneas
+    await page.evaluate(() => {
+      document.body.style.background = 'transparent';
+    });
+
+    // Guarda la imagen con fondo transparente
+    await page.screenshot({ 
+      path: `dashboard_${MARCA}_${MES}.png`, 
+      fullPage: true,
+      omitBackground: true  // Esto hará que el fondo sea transparente
+    });
 
     console.log(`Imagen del dashboard generada con éxito para el código ${MARCA}!`);
-   // await enviarCorreo(email, `dashboard_${MARCA}_JULIO.png`);
+    // await enviarCorreo(email, `dashboard_${MARCA}_${MES}.png`);
 
     await browser.close();
   } catch (error) {
@@ -189,23 +220,47 @@ async function obtenerCodigosMarca() {
 
 async function enviarCorreo(email, imagenPath, codigo, tipo) {
   try {
-    const imageData = await fs.promises.readFile(imagenPath, 'base64');
-    const emailBody = `
-      <html>
-        <body>
-          <img src="data:image/png;base64,${imageData}" alt="Dashboard Image">
-        </body>
-      </html>
-    `;
-
-    await axios.post('https://serviciosmovil.siglo21.net:8443/api/enviarCorreo', {
-      correo: email,
-      asunto: 'Prueba Dashboard DeWallet✅',
-      cuerpo: emailBody
+    // Configuración del transporte SMTP
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.office365.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'info@siglo21.net',
+        pass: 'Siglo-2023'
+      }
     });
 
-    console.log(`Correo enviado exitosamente a ${email}`);
+    // Leer la imagen como buffer
+    const imageBuffer = await fsPromises.readFile(imagenPath);
 
+    // Opciones del correo
+    const mailOptions = {
+      from: '"DeWallet" <info@siglo21.net>',
+      to: email,
+      subject: 'Tu Reporte en DeWallet✅',
+      html: `
+        <html>
+          <body>
+            <p>Hola,</p>
+            <p>Aquí tienes un reporte de tu interacción dentro de la aplicación hasta el momento.</p>
+            <img src="cid:dashboardImage" alt="Dashboard Image">
+          </body>
+        </html>
+      `,
+      attachments: [
+        {
+          filename: `dashboard_${codigo}.png`,
+          content: imageBuffer,
+          cid: 'dashboardImage'
+        }
+      ]
+    };
+
+    // Enviar el correo
+    await transporter.sendMail(mailOptions);
+
+    console.log(`Correo enviado exitosamente a ${email}`);
     await actualizarEstadoCorreo(codigo, tipo);
   } catch (error) {
     console.error(`Error al enviar el correo a ${email}:`, error);
@@ -238,14 +293,18 @@ let CODIGOS_CANAL;
 let CODIGOS_VENDEDOR;
 let CODIGOS_MARCA;
 
-const START_DATE = '2024-07-01';
-const END_DATE = '2024-07-01';
+const START_DATE = '2024-08-01';
+const END_DATE = '2024-08-31';
 
-const START_DATE_2 = '2024-07-01T00:00:00'
-const END_DATE_2 = '2024-07-31T23:59:59.997'
+const START_DATE_2 = '2024-08-01T00:00:00';
+const END_DATE_2 = '2024-08-31T23:59:59.997';
 
-const START_DATE_3 = '2024-07-01 00:00:00';
-const END_DATE_3 = '2024-07-31 23:59:59'
+const START_DATE_3 = '2024-08-01 00:00:00';
+const END_DATE_3 = '2024-08-31 23:59:59';
+
+const MES ='AGOSTO';
+
+
 
 
 const runProcessForAllChannels = async () => {
@@ -253,21 +312,21 @@ const runProcessForAllChannels = async () => {
   for (const { codigo, email } of CODIGOS_CANAL) {
     global.CODIGO_CANAL = codigo; 
     await generateDashboardImage(email); 
-    await enviarCorreo(email, `dashboard_${codigo}_JULIO.png`, codigo, 'C');
+    await enviarCorreo(email, `dashboard_${codigo}_${MES}.png`, codigo, 'C');
   }
 
   CODIGOS_VENDEDOR = await obtenerCodigosVendedor();
   for (const  { codigo, email } of CODIGOS_VENDEDOR) {
     global.CODIGO_VENDEDOR = codigo; 
     await generateDashboardImageVendedor(email); 
-    await enviarCorreo(email, `dashboard_${codigo}_JULIO.png`, codigo, 'V');
+    await enviarCorreo(email, `dashboard_${codigo}_${MES}.png`, codigo, 'V');
   }
 
   CODIGOS_MARCA = await obtenerCodigosMarca();
   for (const  { codigo, email } of CODIGOS_MARCA) {
     global.MARCA = codigo; 
     await generateDashboardImageMarca(email); 
-    await enviarCorreo(email, `dashboard_${codigo}_JULIO.png`, codigo, 'M');
+    await enviarCorreo(email, `dashboard_${codigo}_${MES}.png`, codigo, 'M');
   }
 };
 
@@ -325,8 +384,10 @@ app.get('/api/ruc-clientes-marca', async (req, res) => {
     const result = await sql.query(`
       SELECT dv.rucCanal, dv.canal, COUNT(*) AS cantidad
       FROM detSerie ds
-      JOIN cabeceraProductosParticipantes cpp ON ds.itemCodigo = cpp.itemCode
-      JOIN detalleVendedor dv ON ds.codCliente = dv.rucCanal
+      JOIN cabeceraProductosParticipantes cpp 
+        ON ds.itemCodigo = cpp.itemCode
+      JOIN detalleVendedor dv 
+        ON ds.codVendedor  = dv.codigoVendedor 
       WHERE CONVERT(datetime, ds.created_at, 120) >= '${START_DATE_2}'
       AND CONVERT(datetime, ds.created_at, 120) <= '${END_DATE_2}'
       AND cpp.marca = '${MARCA}'
@@ -385,11 +446,10 @@ app.get('/api/ruc-clientes-marca', async (req, res) => {
       });
     });
   } catch (error) {
-    console.error('Error en la consulta de /ruc-clientes-marca', error);
-    res.status(500).json({ error: 'Error al obtener los datos de /ruc-clientes-marca' });
+    console.error('Error en la consulta de ', error);
+    res.status(500).json({ error: 'Error al obtener los datos de ' });
   }
 });
-
 
 app.get('/api/total-filtrado', async (req, res) => {
   try {
@@ -467,9 +527,6 @@ app.get('/api/registros-mensuales', async (req, res) => {
     }
 });
 
-
-
-
 app.get('/api/categorias-registradas', async (req, res) => {
     try {
         const result = await sql.query(`
@@ -490,8 +547,6 @@ app.get('/api/categorias-registradas', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener los datos' });
     }
 });
-
-
 
 app.get('/api/valor-canjeado-del-mes', async (req, res) => {
     try {

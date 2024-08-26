@@ -50,10 +50,11 @@ const BarChartComponent = ({ data }) => (
       name: item.name,
       value: parseFloat(item.value) // Ensure value is a number
     }));
-  
+    const mes = process.env.REACT_APP_MES; // Valor de la variable de entorno
+
     return (
       <div className="chart-container">
-        <h2 className="chart-title">Marcas registradas - Julio</h2>
+        <h2 className="chart-title">Marcas registradas - {mes}</h2>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
@@ -517,6 +518,8 @@ const Vendedor = () => {
       window.removeEventListener('resize', ensureWindowSize);
     };
   }, []);
+  const mes = process.env.REACT_APP_MES; // Valor de la variable de entorno
+
 
   return (
     <div className="dashboard">
@@ -531,7 +534,7 @@ const Vendedor = () => {
           values={[
             {
               value: totalRegistros !== null ? totalRegistros.toLocaleString() : '0',
-              description: 'registros en julio',
+              description: `registros en ${mes}`,
             },
           ]}
         />
@@ -539,7 +542,7 @@ const Vendedor = () => {
           values={[
             {
               value: totalValorPremioCanjeado !== null ? `$${totalValorPremioCanjeado.toLocaleString()}` : '$0',
-              description: 'registrado en julio',
+              description: `registrado en ${mes}`,
             },
           ]}
         />
