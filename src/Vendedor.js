@@ -17,7 +17,7 @@ const COLORS = ['#004e98', '#3a6ea5', '#1b4965', '#ffa62b', '#e07a5f', '#f58549'
 
 const BarChartComponent = ({ data }) => (
     <div className="chart-container">
-      <h2 className="chart-title">Tus productos más registrados hasta ahora</h2>
+      <h2 className="chart-title">Tus productos con mayores registros son:</h2>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data} layout="vertical" margin={{ right: 100, left: 10 }}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -249,7 +249,7 @@ const Top5ProductsTable = ({ data, title }) => {
           <Tooltip content={<CustomTooltip />} />
         </PieChart>
       </ResponsiveContainer>
-      <div className="legend-container" style={{ marginTop: '-20px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div className="legend-container" style={{ marginTop: '-20px', display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
       {chartData.map((entry, index) => (
         <div key={`legend-${index}`} className="legend-item" style={{ display: 'flex', alignItems: 'center', margin: '0 10px 10px 0', minWidth: '200px' }}>
           <div style={{ width: '20px', height: '20px', backgroundColor: COLORS[index % COLORS.length], marginRight: '10px' }}></div>
@@ -407,8 +407,8 @@ const Vendedor = () => {
       
           // Array con los nombres de los meses
           const monthNames = [
-            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
-            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+            "Ene.", "Feb.", "Mar.", "Abr.", "May.", "Jun.", 
+            "Jul.", "Ago.", "Sept.", "Oct.", "Nov.", "Dic."
           ];
       
           // Transformar los datos obtenidos de la API
@@ -527,14 +527,14 @@ const Vendedor = () => {
         <div className="dashboard-header">
           <img src="/dewallet.png" alt="DeWallet Logo" className="dashboard-logo" />
         </div>
-        <h2 className="chart-title-principal">Hola {vendedor.nombre} {vendedor.apellido}, este es tu resumen en DeWallet hasta el momento</h2>
+        <h2 className="chart-title-principal">Hola {vendedor.nombre} {vendedor.apellido}, este es tu resumen en DeWallet de {mes}</h2>
         <div className="info-cards-container">
       <div className="info-cards-group">  
         <InfoCard
           values={[
             {
               value: totalRegistros !== null ? totalRegistros.toLocaleString() : '0',
-              description: `registros en ${mes}`,
+              description: `registros`,
             },
           ]}
         />
@@ -542,7 +542,7 @@ const Vendedor = () => {
           values={[
             {
               value: totalValorPremioCanjeado !== null ? `$${totalValorPremioCanjeado.toLocaleString()}` : '$0',
-              description: `registrado en ${mes}`,
+              description: `registrado`,
             },
           ]}
         />

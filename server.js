@@ -121,7 +121,6 @@ const generateDashboardImageVendedor = async (email) => {
     });
 
     console.log(`Imagen del dashboard generada con éxito para el código ${CODIGO_VENDEDOR}!`);
-    //await enviarCorreo(email, `dashboard_${CODIGO_VENDEDOR}_${MES}.png`);
     await browser.close();
   } catch (error) {
     console.error(`Error al generar la imagen para el código ${CODIGO_VENDEDOR}:`, error);
@@ -936,7 +935,94 @@ app.get('/api/cantidad-registros-marca', async (req, res) => {
   });
   
   
-
+  app.get('/api/linea-de-negocio', async (req, res) => {
+    try {
+      // Consulta en SQL Server
+      const result = await sql.query(`
+        SELECT cpp.descripcion, cpp.ItemCode, COUNT(*) AS cantidad
+        FROM detSerie ds
+        JOIN cabeceraProductosParticipantes cpp 
+          ON ds.itemCodigo = cpp.itemCode
+        WHERE CONVERT(datetime, ds.created_at, 120) >= '2024-08-01T00:00:00'
+        AND CONVERT(datetime, ds.created_at, 120) <= '2024-08-31T23:59:59.997'
+        AND cpp.marca = 'HPINC'
+        GROUP BY cpp.descripcion, cpp.ItemCode
+        ORDER BY cantidad DESC;
+      `);
+  
+      // Extraer ItemCodes para la consulta en SAP HANA
+      const itemCodes = result.recordset.map(item => item.ItemCode);
+  
+      if (itemCodes.length === 0) {
+        return res.json([]); // Si no hay ItemCodes, retornar resultados vacíos
+      }
+  
+      // Conectar a SAP HANA
+      const connection = hanaClient.createConnection();
+      connection.connect(hanaConfig, async (err) => {
+        if (err) {
+          console.error('Error de conexión a SAP HANA:', err);
+          return res.status(500).json({ error: 'Error al conectar a SAP HANA' });
+        }
+  
+        // Consulta parametrizada para obtener línea de negocio
+        const sqlQuery = `
+          SELECT 
+              OITM."ItemCode", 
+              OITM."U_ExxCodLineaNegocio", 
+              LN."U_DescLineaNegocio"
+          FROM 
+              SBOSIGLO21.OITM
+          JOIN 
+              SBOSIGLO21."@AEXX_LINEA_NEGOCIO" LN 
+              ON OITM."U_ExxCodLineaNegocio" = LN."Code"
+          WHERE 
+              OITM."U_ExxCodLineaNegocio" IS NOT NULL
+              AND OITM."ItemCode" IN (${itemCodes.map(() => '?').join(',')})
+        `;
+        
+        connection.exec(sqlQuery, itemCodes, (err, rows) => {
+          if (err) {
+            console.error('Error al ejecutar la consulta en SAP HANA:', err);
+            connection.disconnect();
+            return res.status(500).json({ error: 'Error al obtener la línea de negocio de SAP HANA' });
+          }
+  
+          // Crear un mapa de ItemCode a línea de negocio
+          const itemCodeLineaNegocioMap = rows.reduce((acc, row) => {
+            acc[row.ItemCode] = {
+              codigoLineaNegocio: row.U_ExxCodLineaNegocio,
+              descripcionLineaNegocio: row.U_DescLineaNegocio
+            };
+            return acc;
+          }, {});
+  
+          // Consolidar los resultados por línea de negocio
+          const lineaNegocioCantidad = result.recordset.reduce((acc, item) => {
+            const lineaNegocio = itemCodeLineaNegocioMap[item.ItemCode] || { descripcionLineaNegocio: 'Línea de negocio no encontrada' };
+            if (!acc[lineaNegocio.descripcionLineaNegocio]) {
+              acc[lineaNegocio.descripcionLineaNegocio] = 0;
+            }
+            acc[lineaNegocio.descripcionLineaNegocio] += item.cantidad;
+            return acc;
+          }, {});
+  
+          // Convertir el mapa a un arreglo de objetos y ordenar por cantidad de mayor a menor
+          const consolidatedResults = Object.keys(lineaNegocioCantidad).map(descripcion => ({
+            descripcionLineaNegocio: descripcion,
+            cantidad: lineaNegocioCantidad[descripcion]
+          })).sort((a, b) => b.cantidad - a.cantidad);
+  
+          connection.disconnect();
+          res.json(consolidatedResults);
+        });
+      });
+    } catch (error) {
+      console.error('Error en la consulta de ', error);
+      res.status(500).json({ error: 'Error al obtener los datos de ' });
+    }
+  });
+  
 
 
 const PORT = 5000;

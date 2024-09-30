@@ -101,7 +101,7 @@ body {
 .info-cards-container {
   display: flex;
   justify-content: center;
-  gap: 10px; /* Ajusta este valor para controlar la distancia entre las tarjetas */
+  gap: 12px; /* Ajusta este valor para controlar la distancia entre las tarjetas */
   margin-top: 20px; /* Ajusta este valor para controlar la distancia superior */
 }
 .info-cards-group {
